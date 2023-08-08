@@ -1,0 +1,7 @@
+{
+  "name": "aes-expenseTracker",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}

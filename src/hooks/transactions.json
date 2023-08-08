@@ -1,0 +1,42 @@
+[
+  {
+    "title": "Bus ticket",
+    "value": 12,
+    "category": "Travel",
+    "notes": "",
+    "createdAt": 1677584760000,
+    "id": 1674474419913
+  },
+  {
+    "title": "Playoffs",
+    "value": 42,
+    "category": "Sports",
+    "notes": "GO PACK GO",
+    "createdAt": 1674906300000,
+    "id": 1674474362931
+  },
+  {
+    "title": "New Jacket",
+    "value": 120,
+    "category": "Shopping",
+    "notes": "it was epic",
+    "createdAt": 1674819780000,
+    "id": 1674474226968
+  },
+  {
+    "title": "Apartment",
+    "value": 1300,
+    "category": "Rent",
+    "notes": "Should get a new one",
+    "createdAt": 1674474305973,
+    "id": 1674474323939
+  },
+  {
+    "title": "Banana",
+    "value": 12,
+    "category": "Food",
+    "notes": "",
+    "createdAt": 1674474025377,
+    "id": 1674474028269
+  }
+]

@@ -1,0 +1,8 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "aes-expenseTracker",
+	"webDir": "build",
+	"server": {
+		"androidScheme": "https"
+	}
+}
