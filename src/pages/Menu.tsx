@@ -16,6 +16,7 @@ import {cashOutline, settingsOutline} from "ionicons/icons";
 import Tracker from "./Tracker";
 import {Redirect, Route} from "react-router-dom";
 import Settings from "./Settings";
+import Details from "./Details";
 
 const Menu: React.FC = () => {
 
@@ -48,8 +49,9 @@ const Menu: React.FC = () => {
                 </IonMenu>
 
                 <IonRouterOutlet id='main'>
-                    <Route path='/tracker' component={Tracker}/>
-                    <Route path='/settings' component={Settings}/>
+                    <Route exact path='/tracker' component={Tracker}/>
+                    <Route exact path='/tracker/:id' component={Details}/>
+                    <Route exact path='/settings' component={Settings}/>
                     <Redirect exact from="/" to="/tracker"/>
                 </IonRouterOutlet>
             </IonSplitPane>

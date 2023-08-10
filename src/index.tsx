@@ -5,12 +5,12 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
 const container = document.getElementById('root');
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 const root = createRoot(container!);
 root.render(
-    <React.StrictMode>
-        <App/>
-    </React.StrictMode>
+    //<React.StrictMode>
+    <App/>
+    //</React.StrictMode>
 );
 
 // If you want your app to work offline and load faster, you can change

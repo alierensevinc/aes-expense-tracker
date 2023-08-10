@@ -22,17 +22,20 @@ import '@ionic/react/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 import Menu from "./pages/Menu";
+import {StorageProvider} from "./providers/storageProvider";
 
 setupIonicReact();
 
 const App: React.FC = () => (
-    <IonApp>
-        <IonReactRouter>
-            <IonRouterOutlet>
-                <Route path="/" component={Menu}/>
-            </IonRouterOutlet>
-        </IonReactRouter>
-    </IonApp>
+    <StorageProvider>
+        <IonApp>
+            <IonReactRouter>
+                <IonRouterOutlet>
+                    <Route path="/" component={Menu}/>
+                </IonRouterOutlet>
+            </IonReactRouter>
+        </IonApp>
+    </StorageProvider>
 );
 
 export default App;

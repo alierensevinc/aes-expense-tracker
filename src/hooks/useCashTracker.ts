@@ -6,7 +6,7 @@ import {
     pizzaOutline,
     schoolOutline
 } from "ionicons/icons";
-import transactions from './transactions.json';
+import {useStorage} from "../providers/storageProvider";
 
 export interface Transaction {
     id: number;
@@ -19,11 +19,23 @@ export interface Transaction {
 }
 
 export const useCashTracker = () => {
+    const {saveTransactions, loadTransactions} = useStorage();
+
     const getTransactions = async (): Promise<Transaction[]> => {
-        return new Promise((resolve, reject) => {
-            // @ts-ignore
-            resolve(transactions);
-        })
+        const transactions = await loadTransactions();
+        return transactions.sort((trans: Transaction, trans2: Transaction) =>
+            trans2.createdAt - trans.createdAt
+        );
+    }
+
+    const addTransaction = async (transaction: Transaction) => {
+        const current = await getTransactions();
+        return saveTransactions([transaction, ...current]);
+    }
+
+    const getTransactionById = async (id: number): Promise<Transaction> => {
+        const all = await getTransactions();
+        return all.filter((trans) => trans.id === id)[0];
     }
 
     const getIconForCategory = (cat: string) => {
@@ -55,8 +67,10 @@ export const useCashTracker = () => {
     };
 
     return {
+        getTransactions,
+        addTransaction,
+        getTransactionById,
         getIconForCategory,
-        getCategories,
-        getTransactions
+        getCategories
     };
 }
