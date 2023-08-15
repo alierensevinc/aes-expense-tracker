@@ -38,6 +38,53 @@ export const useCashTracker = () => {
         return all.filter((trans) => trans.id === id)[0];
     }
 
+    const getGroupedTransactions = async () => {
+        const transactions = await getTransactions();
+
+        const resultObject: any = {};
+
+        for (const trans of transactions) {
+            if (resultObject[trans.category]) {
+                resultObject[trans.category].push(trans);
+            } else {
+                resultObject[trans.category] = [trans];
+            }
+        }
+
+        // {
+        //   "rent": [{}, {}],
+        //   "travel": [{}, {}]
+        // }
+
+        const result: { category: string; transactions: Transaction[] }[] = [];
+
+        Object.keys(resultObject).forEach((cat) => {
+            result.push({
+                category: cat,
+                transactions: resultObject[cat]
+            });
+        });
+        // [
+        //   {category: 'travel', transactions: [{}, {}]},
+        //   {category: 'food', transactions: [{}, {}]}
+        // ]
+        return result;
+    };
+
+    const deleteTransaction = async (transaction: Transaction): Promise<Transaction[]> => {
+        const current = await getTransactions();
+        const filtered = current.filter((trans) => trans.id !== transaction.id);
+        await saveTransactions(filtered);
+        return filtered;
+    }
+
+    const updateTransaction = async (transaction: Transaction): Promise<Transaction[]> => {
+        const filtered = await deleteTransaction(transaction);
+        filtered.push(transaction);
+        await saveTransactions(filtered);
+        return filtered;
+    }
+
     const getIconForCategory = (cat: string) => {
         switch (cat) {
             case 'Food':
@@ -70,6 +117,9 @@ export const useCashTracker = () => {
         getTransactions,
         addTransaction,
         getTransactionById,
+        getGroupedTransactions,
+        deleteTransaction,
+        updateTransaction,
         getIconForCategory,
         getCategories
     };

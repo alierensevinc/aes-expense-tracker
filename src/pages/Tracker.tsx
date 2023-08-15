@@ -1,6 +1,9 @@
 import {
+    IonAccordion,
+    IonAccordionGroup,
     IonButton,
     IonButtons,
+    IonChip,
     IonContent,
     IonDatetime,
     IonDatetimeButton,
@@ -10,11 +13,16 @@ import {
     IonIcon,
     IonInput,
     IonItem,
+    IonItemOption,
+    IonItemOptions,
+    IonItemSliding,
     IonLabel,
     IonList,
     IonMenuButton,
     IonModal,
     IonPage,
+    IonSegment,
+    IonSegmentButton,
     IonSelect,
     IonSelectOption,
     IonText,
@@ -25,12 +33,19 @@ import {
 import React, {useEffect, useRef, useState} from 'react';
 import {Transaction, useCashTracker} from "../hooks/useCashTracker";
 import {NumericFormat} from "react-number-format";
-import {addOutline, checkmarkDone, closeOutline} from "ionicons/icons";
+import {addOutline, arrowDownOutline, checkmarkDone, closeOutline, trashOutline} from "ionicons/icons";
 import {useForm} from "react-hook-form";
 
 const Tracker: React.FC = () => {
     const modal = useRef<HTMLIonModalElement>(null);
-    const {getTransactions, addTransaction, getIconForCategory, getCategories} = useCashTracker();
+    const {
+        getTransactions,
+        addTransaction,
+        getGroupedTransactions,
+        deleteTransaction,
+        getIconForCategory,
+        getCategories
+    } = useCashTracker();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const {register, handleSubmit, setValue} = useForm({
         defaultValues: {
@@ -41,26 +56,43 @@ const Tracker: React.FC = () => {
             createdAt: new Date().getTime()
         }
     });
+    const [groupedTransactions, setGroupedTransactions] = useState<{ category: string; transactions: Transaction[] }[]>();
+    const [view, setView] = useState('all');
 
     useEffect(() => {
-        loadData();
+        loadTransactions();
     }, []);
 
-    const loadData = async () => {
+    useEffect(() => {
+        loadGroupedTransactions();
+    }, [transactions]);
+
+    const loadTransactions = async () => {
         const data = await getTransactions();
         setTransactions(data);
+    }
+
+    const loadGroupedTransactions = async () => {
+        const data = await getGroupedTransactions();
+        console.log(data);
+        setGroupedTransactions(data);
     }
 
     const onDateSelected = (ev: any) => {
         setValue('createdAt', new Date(ev).getTime());
     }
 
-    const saveTransaction = async (data: any) => {
+    const shouldAddTransaction = async (data: any) => {
         data.value = +data.value;
         data.id = new Date().getTime();
         await addTransaction(data);
         setTransactions([data, ...transactions]);
         modal.current?.dismiss();
+    }
+
+    const shouldDeleteTransaction = async (transaction: Transaction) => {
+        const filtered = await deleteTransaction(transaction);
+        setTransactions(filtered);
     }
 
     return (
@@ -72,24 +104,74 @@ const Tracker: React.FC = () => {
                     </IonButtons>
                     <IonTitle>Tracker</IonTitle>
                 </IonToolbar>
+                <IonToolbar>
+                    <IonSegment value={view} onIonChange={(ev) => setView(ev.detail.value! + "")}>
+                        <IonSegmentButton value={'all'}>All</IonSegmentButton>
+                        <IonSegmentButton value={'category'}>Category</IonSegmentButton>
+                    </IonSegment>
+                </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding">
-                <IonList>
-                    {transactions.map((trans) => (
-                        <IonItem key={trans.id} detail={false} routerLink={`/tracker/${trans.id}`}>
-                            <IonIcon slot={'start'} icon={getIconForCategory(trans.category)}/>
-                            <IonLabel>
-                                <h2>{trans.title}</h2>
-                                <p>{new Intl.DateTimeFormat('en-GB').format(trans.createdAt)}</p>
-                            </IonLabel>
-                            <IonText slot='end'>
-                                <NumericFormat value={trans.value} prefix={'$'} displayType={'text'}
-                                               thousandSeparator={true}/>
-                            </IonText>
-                        </IonItem>
-                    ))}
-                </IonList>
+                {
+                    view === 'all' && <IonList>
+                        {transactions.map((trans) => (
+                            <IonItemSliding key={trans.id}>
+                                <IonItem detail={false} routerLink={`/tracker/${trans.id}`}>
+                                    <IonIcon slot={'start'} icon={getIconForCategory(trans.category)}/>
+                                    <IonLabel>
+                                        <h2>{trans.title}</h2>
+                                        <p>{new Intl.DateTimeFormat('en-GB').format(trans.createdAt)}</p>
+                                    </IonLabel>
+                                    <IonText slot='end'>
+                                        <NumericFormat value={trans.value} prefix={'$'} displayType={'text'}
+                                                       thousandSeparator={true}/>
+                                    </IonText>
+                                </IonItem>
 
+                                <IonItemOptions slot={'end'}>
+                                    <IonItemOption onClick={() => shouldDeleteTransaction(trans)}>
+                                        <IonIcon icon={trashOutline} slot={'icon-only'}/>
+                                    </IonItemOption>
+                                </IonItemOptions>
+                            </IonItemSliding>
+                        ))}
+                    </IonList>
+                }
+                {
+                    view === 'category' && <IonAccordionGroup multiple={true}>
+                        {groupedTransactions?.map((group) => (
+                            <IonAccordion key={group.category} toggleIcon={arrowDownOutline}>
+                                <IonItem lines="none" slot="header">
+                                    <IonIcon
+                                        color={'secondary'}
+                                        slot="start"
+                                        icon={getIconForCategory(group.category)}
+                                    />
+                                    <IonLabel>
+                                        {group.category}
+                                        <IonChip color={'secondary'}>{group.transactions.length}</IonChip>
+                                    </IonLabel>
+                                </IonItem>
+                                <IonList slot="content">
+                                    {group.transactions.map((trans) => (
+                                        <IonItem lines="none" key={trans.id} className="transaction-items">
+                                            <IonLabel>
+                                                <NumericFormat
+                                                    value={trans.value}
+                                                    displayType={'text'}
+                                                    thousandSeparator={true}
+                                                    prefix={'$'}
+                                                />
+                                                <p>{trans.title}</p>
+                                            </IonLabel>
+                                            <p slot="end">{new Intl.DateTimeFormat('en-GB').format(trans.createdAt)}</p>
+                                        </IonItem>
+                                    ))}
+                                </IonList>
+                            </IonAccordion>
+                        ))}
+                    </IonAccordionGroup>
+                }
                 <IonFab slot={'fixed'} vertical={'bottom'} horizontal={'end'}>
                     <IonFabButton id={'open-expense-modal'}>
                         <IonIcon icon={addOutline}/>
@@ -117,7 +199,7 @@ const Tracker: React.FC = () => {
                         </IonToolbar>
                     </IonHeader>
                     <IonContent>
-                        <form id={'custom-form'} onSubmit={handleSubmit(saveTransaction)}>
+                        <form id={'custom-form'} onSubmit={handleSubmit(shouldAddTransaction)}>
                             <IonItem>
                                 <IonLabel position={'stacked'}>Amount</IonLabel>
                                 <IonInput type={'number'}

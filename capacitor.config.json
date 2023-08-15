@@ -1,5 +1,5 @@
 {
-	"appId": "io.ionic.starter",
+	"appId": "com.alierensevinc.expenseTracker",
 	"appName": "aes-expenseTracker",
 	"webDir": "build",
 	"server": {

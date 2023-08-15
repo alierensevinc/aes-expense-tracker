@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {
     IonBackButton,
+    IonButton,
     IonButtons,
     IonCard,
     IonCardContent,
@@ -9,6 +10,7 @@ import {
     IonCardTitle,
     IonContent,
     IonHeader,
+    IonIcon,
     IonPage,
     IonText,
     IonTitle,
@@ -17,9 +19,12 @@ import {
 } from '@ionic/react';
 import {Transaction, useCashTracker} from "../hooks/useCashTracker";
 import {NumericFormat} from "react-number-format";
+import {Camera, CameraResultType, CameraSource} from '@capacitor/camera';
+import {cameraOutline} from "ionicons/icons";
+
 
 const Details: React.FC<any> = ({match}) => {
-    const {getTransactionById} = useCashTracker();
+    const {getTransactionById, updateTransaction} = useCashTracker();
     const [transaction, setTransaction] = useState<Transaction>();
 
     useIonViewWillEnter(async () => {
@@ -27,6 +32,22 @@ const Details: React.FC<any> = ({match}) => {
         const data = await getTransactionById(+id);
         setTransaction(data);
     })
+
+    const takePicture = async () => {
+        const image = await Camera.getPhoto({
+            quality: 90,
+            allowEditing: true,
+            resultType: CameraResultType.Base64,
+            source: CameraSource.Prompt,
+        });
+        const imageString = `data:image/png;base64,${image.base64String}`;
+        const updated = {
+            ...transaction!,
+            image: imageString
+        }
+        setTransaction(updated);
+        updateTransaction(updated);
+    };
 
     return (
         <IonPage>
@@ -38,7 +59,7 @@ const Details: React.FC<any> = ({match}) => {
                     <IonTitle>Details</IonTitle>
                 </IonToolbar>
             </IonHeader>
-            <IonContent className="ion-padding">
+            <IonContent className="ion-padding" fullscreen={true}>
                 <IonCard>
                     <IonCardHeader>
                         <IonCardTitle>
@@ -53,7 +74,14 @@ const Details: React.FC<any> = ({match}) => {
                     </IonCardHeader>
                     <IonCardContent>
                         {transaction?.notes}
+                        {
+                            transaction?.image && <img src={transaction.image} alt={'Transaction image'}/>
+                        }
                     </IonCardContent>
+                    <IonButton expand={'block'} fill={'outline'} onClick={takePicture}>
+                        <IonIcon icon={cameraOutline} slot={'start'}/>
+                        Add Image
+                    </IonButton>
                 </IonCard>
             </IonContent>
         </IonPage>
